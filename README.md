@@ -76,5 +76,5 @@ Do not actually use this seriously. This is a joke project.
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the GPL-3.0 License. See `LICENSE` for more information.
 

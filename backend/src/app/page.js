@@ -342,7 +342,7 @@ export default function Home() {
                         4dc
                     </div>
                     <div className="text-sm text-neutral-600">
-                        Distributed under MIT License.
+                        Distributed under GPL-3.0 License.
                     </div>
                     <div className="flex gap-4">
                         <a href="https://github.com/Stiwyy/4dc" className="text-neutral-500 hover:text-white transition-colors">
