@@ -1,52 +1,31 @@
+import { adminAuth, adminDb } from "@/lib/firebaseAdmin";
 import { NextResponse } from "next/server";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase";
 
 export async function POST(request) {
     try {
-        const body = await request.json();
-        const { email, password, username } = body;
+        const { email, password, username } = await request.json();
 
         if (!email || !password || !username) {
-            return NextResponse.json(
-                { error: "Missing email, password or username" },
-                { status: 400 }
-            );
+            return NextResponse.json({ error: "Missing fields" }, { status: 400 });
         }
 
-        const userCredential = await createUserWithEmailAndPassword(
-            auth,
+        const userRecord = await adminAuth.createUser({
             email,
-            password
-        );
+            password,
+            displayName: username,
+        });
 
-        const user = userCredential.user;
-
-        await setDoc(doc(db, "users", user.uid), {
-            username: username,
-            createdAt: serverTimestamp(),
+        await adminDb.collection("users").doc(userRecord.uid).set({
+            username,
+            createdAt: new Date().toISOString(),
             contacts: [],
             contactRequestsSent: [],
             contactRequestsReceived: [],
         });
 
-        return NextResponse.json(
-            {
-                success: true,
-                userId: user.uid,
-                username: username,
-            },
-            { status: 201 }
-        );
+        return NextResponse.json({ uid: userRecord.uid, username }, { status: 201 });
     } catch (error) {
-        console.error("Register error:", error);
-
-        return NextResponse.json(
-            {
-                error: error.message || "Registration failed",
-            },
-            { status: 500 }
-        );
+        console.error(error);
+        return NextResponse.json({ error: error.code || "INTERNAL_SERVER_ERROR" }, { status: 500 });
     }
 }
