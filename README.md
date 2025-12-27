@@ -41,7 +41,7 @@
 
 ### Backend & Web
 
-* **Framework:** [Next.js 13](https://nextjs.org/) (API Routes)
+* **Framework:** [Next.js 16](https://nextjs.org/) (API Routes)
 * **Hosting:** [Vercel](https://vercel.com/) (Serves the API and the Download Website)
 
 ### Database & Services
