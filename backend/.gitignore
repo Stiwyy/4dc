@@ -16,7 +16,7 @@
 # next.js
 /.next/
 /out/
-
+fourdc-firebase-adminsdk.json
 # production
 /build
 .env.local
