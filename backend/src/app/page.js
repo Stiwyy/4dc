@@ -43,7 +43,7 @@ const SpotlightCard = ({ children, className = "" }) => {
                     background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(16, 185, 129, 0.1), transparent 40%)`,
                 }}
             />
-            <div className="relative z-10">{children}</div>
+            <div className="relative z-10 h-full w-full">{children}</div>
         </div>
     );
 };
@@ -254,6 +254,7 @@ export default function Home() {
                 </div>
             </section>
 
+            {/* FIXED: SYSTEM ARCHITECTURE SECTION */}
             <section className="bg-[#050505] py-24">
                 <div className="container mx-auto px-4">
                     <ScrollReveal>
@@ -267,40 +268,52 @@ export default function Home() {
 
                     <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
 
-                        <SpotlightCard className="flex flex-col items-center justify-center p-6 text-center">
-                            <Globe className="mb-3 h-8 w-8 text-white" />
-                            <h4 className="font-bold text-white">Next.js 16</h4>
-                            <p className="mt-1 text-xs text-neutral-500">API & Backend</p>
+                        <SpotlightCard>
+                            <div className="flex flex-col items-center justify-center text-center h-full">
+                                <Globe className="mb-3 h-8 w-8 text-white" />
+                                <h4 className="font-bold text-white">Next.js 16</h4>
+                                <p className="mt-1 text-xs text-neutral-500">API & Backend</p>
+                            </div>
                         </SpotlightCard>
 
-                        <SpotlightCard className="flex flex-col items-center justify-center p-6 text-center">
-                            <Cpu className="mb-3 h-8 w-8 text-emerald-400" />
-                            <h4 className="font-bold text-white">Electron</h4>
-                            <p className="mt-1 text-xs text-neutral-500">Desktop Wrapper</p>
+                        <SpotlightCard>
+                            <div className="flex flex-col items-center justify-center text-center h-full">
+                                <Cpu className="mb-3 h-8 w-8 text-emerald-400" />
+                                <h4 className="font-bold text-white">Electron</h4>
+                                <p className="mt-1 text-xs text-neutral-500">Desktop Wrapper</p>
+                            </div>
                         </SpotlightCard>
 
-                        <SpotlightCard className="flex flex-col items-center justify-center p-6 text-center">
-                            <Code2 className="mb-3 h-8 w-8 text-blue-400" />
-                            <h4 className="font-bold text-white">React</h4>
-                            <p className="mt-1 text-xs text-neutral-500">UI Library</p>
+                        <SpotlightCard>
+                            <div className="flex flex-col items-center justify-center text-center h-full">
+                                <Code2 className="mb-3 h-8 w-8 text-blue-400" />
+                                <h4 className="font-bold text-white">React</h4>
+                                <p className="mt-1 text-xs text-neutral-500">UI Library</p>
+                            </div>
                         </SpotlightCard>
 
-                        <SpotlightCard className="flex flex-col items-center justify-center p-6 text-center">
-                            <Database className="mb-3 h-8 w-8 text-yellow-500" />
-                            <h4 className="font-bold text-white">Firebase</h4>
-                            <p className="mt-1 text-xs text-neutral-500">NoSQL & Auth</p>
+                        <SpotlightCard>
+                            <div className="flex flex-col items-center justify-center text-center h-full">
+                                <Database className="mb-3 h-8 w-8 text-yellow-500" />
+                                <h4 className="font-bold text-white">Firebase</h4>
+                                <p className="mt-1 text-xs text-neutral-500">NoSQL & Auth</p>
+                            </div>
                         </SpotlightCard>
 
-                        <SpotlightCard className="flex flex-col items-center justify-center p-6 text-center">
-                            <Layers className="mb-3 h-8 w-8 text-cyan-400" />
-                            <h4 className="font-bold text-white">Tailwind</h4>
-                            <p className="mt-1 text-xs text-neutral-500">Styling</p>
+                        <SpotlightCard>
+                            <div className="flex flex-col items-center justify-center text-center h-full">
+                                <Layers className="mb-3 h-8 w-8 text-cyan-400" />
+                                <h4 className="font-bold text-white">Tailwind</h4>
+                                <p className="mt-1 text-xs text-neutral-500">Styling</p>
+                            </div>
                         </SpotlightCard>
 
-                        <SpotlightCard className="flex flex-col items-center justify-center p-6 text-center">
-                            <Key className="mb-3 h-8 w-8 text-purple-500" />
-                            <h4 className="font-bold text-white">AES-GCM</h4>
-                            <p className="mt-1 text-xs text-neutral-500">Cryptography</p>
+                        <SpotlightCard>
+                            <div className="flex flex-col items-center justify-center text-center h-full">
+                                <Key className="mb-3 h-8 w-8 text-purple-500" />
+                                <h4 className="font-bold text-white">AES-GCM</h4>
+                                <p className="mt-1 text-xs text-neutral-500">Cryptography</p>
+                            </div>
                         </SpotlightCard>
 
                     </div>
@@ -311,10 +324,10 @@ export default function Home() {
                 <ScrollReveal>
                     <div className="rounded-2xl border border-red-500/20 bg-red-950/10 p-8 text-center md:p-12">
                         <XCircle className="mx-auto mb-4 h-12 w-12 text-red-500" />
-                        <h3 className="text-2xl font-bold text-white">Critical Warning</h3>
+                        <h3 className="text-2xl font-bold text-white">Critical System Warning</h3>
                         <p className="mx-auto mt-4 max-w-2xl text-neutral-400">
                             <strong className="text-red-400">This is a joke project.</strong> <br/>
-                            While the encryption is real and the code works, <strong>4dc</strong> is a portfolio piece ("Not so secure").
+                            While the encryption is real and the code works, <strong>4dc</strong> is a school project.
                             Please do not use this for actual illegal activities or sensitive government secrets.
                             If you do, that's on you.
                         </p>
