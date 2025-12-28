@@ -15,7 +15,6 @@ export async function POST(request) {
             content,
             sentAt: new Date().toISOString(),
             isEdited: false,
-            isDeleted: false,
             replyTo: replyToMessageId || null
         };
 
