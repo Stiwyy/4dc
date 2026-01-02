@@ -6,12 +6,11 @@ import { useNavigate } from 'react-router-dom';
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true);
-    const navigate = useNavigate(); // Zum Weiterleiten
+    const navigate = useNavigate();
 
     const handleFakeLogin = (e) => {
         e.preventDefault();
         console.log("Visual Test: Logging in...");
-        // Wir tun so, als ob wir uns einloggen und gehen zum Dashboard
         navigate('/dashboard');
     };
 
