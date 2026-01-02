@@ -6,7 +6,7 @@ import { db } from '../lib/firebase';
 import { doc, onSnapshot, collection, query, orderBy, where } from 'firebase/firestore';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { LogOut, UserPlus, MessageSquare, Send, User, Lock, Reply, X, Trash2, Pencil, Check, Users, Plus, Copy, Settings } from 'lucide-react';
+import { LogOut, UserPlus, MessageSquare, Send, User, Lock, Reply, X, Trash2, Pencil, Check, Users, Plus, Copy, MoreVertical, LogOut as LeaveIcon, UserPlus as AddUserIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ContactItem = ({ contactId, isActive, onClick }) => {
@@ -110,9 +110,15 @@ export default function Dashboard() {
 
     const [contactIdInput, setContactIdInput] = useState("");
     const [statusMsg, setStatusMsg] = useState("");
+
     const [showGroupModal, setShowGroupModal] = useState(false);
     const [newGroupName, setNewGroupName] = useState("");
     const [selectedGroupMembers, setSelectedGroupMembers] = useState([]);
+
+    const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+    const [showMembersListModal, setShowMembersListModal] = useState(false);
+    const [selectedNewMembers, setSelectedNewMembers] = useState([]);
+    const [showChatMenu, setShowChatMenu] = useState(false);
 
     const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
 
@@ -149,6 +155,7 @@ export default function Dashboard() {
 
         setReplyingTo(null);
         setEditingMessageId(null);
+        setShowChatMenu(false);
 
         const q = query(collection(db, "chats", selectedChat.chatId, "messages"), orderBy("sentAt", "asc"));
 
@@ -180,7 +187,7 @@ export default function Dashboard() {
         });
 
         return () => unsubs.forEach(unsub => unsub());
-    }, [selectedChat?.chatId]);
+    }, [selectedChat?.members, user.uid]);
 
     const handleCreateGroup = async (e) => {
         e.preventDefault();
@@ -197,8 +204,35 @@ export default function Dashboard() {
         }
     };
 
-    const toggleGroupMember = (id) => {
-        setSelectedGroupMembers(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+    const handleAddMember = async () => {
+        if (selectedNewMembers.length === 0) return;
+        try {
+            for (const newMemberId of selectedNewMembers) {
+                await chatAPI.addMemberToGroup(selectedChat.chatId, newMemberId);
+            }
+            setShowAddMemberModal(false);
+            setSelectedNewMembers([]);
+            const updatedMembers = [...selectedChat.members, ...selectedNewMembers];
+            setSelectedChat(prev => ({ ...prev, members: updatedMembers }));
+        } catch (err) {
+            console.error(err);
+            alert("Failed to add members");
+        }
+    };
+
+    const handleLeaveGroup = async () => {
+        if (!confirm("Are you sure you want to leave this group?")) return;
+        try {
+            await chatAPI.leaveChat(selectedChat.chatId);
+            setSelectedChat(null);
+        } catch (err) {
+            console.error(err);
+            alert("Failed to leave group");
+        }
+    };
+
+    const toggleGroupMember = (id, setter) => {
+        setter(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
     };
 
     const handleDeleteMessage = async (msgId) => {
@@ -270,19 +304,19 @@ export default function Dashboard() {
             </div>
 
             <div className="w-80 border-r border-neutral-800 bg-[#0a0a0a] flex flex-col">
-                <div className="p-4 border-b border-neutral-800 bg-neutral-900/20">
-                    <h2 className="font-bold text-lg">{activeTab === 'chats' ? 'Active Feeds' : 'Network'}</h2>
-                    <div className="text-xs text-neutral-500 font-mono mt-1 cursor-pointer hover:text-emerald-500" onClick={() => navigator.clipboard.writeText(user?.uid)}>ID: {user?.uid?.slice(0, 8)}...</div>
+                <div className="h-16 px-4 border-b border-neutral-800 bg-neutral-900/20 flex items-center justify-between">
+                    <h2 className="font-bold text-lg tracking-tight">{activeTab === 'chats' ? 'Active Feeds' : 'Network'}</h2>
+                    <div className="bg-emerald-500/10 text-emerald-500 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/20 font-mono">ONLINE</div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-thin scrollbar-thumb-neutral-800">
                     {activeTab === 'chats' && (
                         <div className="space-y-2">
-                            <button onClick={() => setShowGroupModal(true)} className="w-full py-2 mb-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-500 border border-emerald-500/20 rounded hover:bg-emerald-500/10 transition-colors">
-                                <Plus className="w-4 h-4" /> New Group
+                            <button onClick={() => setShowGroupModal(true)} className="w-full py-2 mb-2 flex items-center justify-center gap-2 text-xs font-bold text-emerald-500 border border-emerald-500/20 rounded hover:bg-emerald-500/10 transition-colors group">
+                                <Plus className="w-4 h-4 group-hover:scale-110 transition-transform" /> New Group
                             </button>
 
-                            {myChats.length === 0 && <div className="text-xs text-neutral-600 text-center mt-4">No active chats.</div>}
+                            {myChats.length === 0 && <div className="text-xs text-neutral-600 text-center mt-10">No active chats.<br/>Start a secure connection.</div>}
 
                             {myChats.map((chat) => {
                                 if (chat.type === 'group') {
@@ -298,30 +332,48 @@ export default function Dashboard() {
 
                     {activeTab === 'contacts' && (
                         <div className="space-y-4 p-2">
-                            <form onSubmit={handleAddContact} className="space-y-2 p-3 bg-neutral-900/50 rounded-lg border border-neutral-800">
-                                <label className="text-xs text-neutral-500 uppercase font-bold">Add by ID</label>
+                            <form onSubmit={handleAddContact} className="space-y-2 p-3 bg-neutral-900/50 rounded-lg border border-neutral-800 shadow-sm">
+                                <label className="text-[10px] text-neutral-500 uppercase font-bold tracking-wider">Add Contact</label>
                                 <div className="flex gap-2">
-                                    <Input placeholder="Paste ID..." value={contactIdInput} onChange={(e) => setContactIdInput(e.target.value)} className="h-8 text-xs" />
-                                    <Button type="submit" className="h-8 px-3">Add</Button>
+                                    <Input placeholder="User ID..." value={contactIdInput} onChange={(e) => setContactIdInput(e.target.value)} className="h-8 text-xs font-mono" />
+                                    <Button type="submit" className="h-8 px-3 bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700 shadow-none">Add</Button>
                                 </div>
                                 {statusMsg && <p className="text-[10px] text-emerald-500">{statusMsg}</p>}
                             </form>
 
-                            {myRequests.map(reqId => (
-                                <div key={reqId} className="p-3 bg-emerald-900/10 border border-emerald-500/20 rounded-lg flex flex-col gap-2">
-                                    <div className="text-xs font-mono text-emerald-200">{reqId}</div>
-                                    <Button onClick={() => chatAPI.acceptContact(user.uid, reqId)} className="w-full h-7 text-[10px]">Confirm Connection</Button>
+                            {myRequests.length > 0 && (
+                                <div className="space-y-1">
+                                    <div className="text-[10px] text-neutral-500 uppercase font-bold px-1">Pending Requests</div>
+                                    {myRequests.map(reqId => (
+                                        <div key={reqId} className="p-3 bg-emerald-900/10 border border-emerald-500/20 rounded-lg flex flex-col gap-2">
+                                            <div className="text-xs font-mono text-emerald-200 truncate">{reqId}</div>
+                                            <Button onClick={() => chatAPI.acceptContact(user.uid, reqId)} className="w-full h-7 text-[10px]">Accept Request</Button>
+                                        </div>
+                                    ))}
                                 </div>
-                            ))}
+                            )}
 
                             <div>
-                                <h3 className="text-xs text-neutral-500 uppercase font-bold px-1 mb-2">My Contacts</h3>
+                                <h3 className="text-[10px] text-neutral-500 uppercase font-bold px-1 mb-2">My Contacts</h3>
+                                {myContacts.length === 0 && <div className="text-xs text-neutral-600 px-2 italic">List is empty.</div>}
                                 {myContacts.map((contactId) => (
                                     <ContactItem key={contactId} contactId={contactId} isActive={false} onClick={() => handleStartChat(contactId)} />
                                 ))}
                             </div>
                         </div>
                     )}
+                </div>
+
+                <div className="p-2 bg-[#080808] border-t border-neutral-800">
+                    <div className="group flex items-center gap-2 p-2 rounded-md hover:bg-white/5 transition-colors cursor-pointer" onClick={() => navigator.clipboard.writeText(user?.uid)} title="Click to copy ID">
+                        <div className="flex-1 overflow-hidden">
+                            <div className="text-xs font-bold text-white truncate">{userData?.username || "Identity Loading..."}</div>
+                            <div className="text-[10px] text-neutral-500 font-mono truncate flex items-center gap-1">#{user?.uid?.slice(0, 6)}...</div>
+                        </div>
+                        <div className="flex items-center opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                            <button className="p-1.5 text-neutral-400 hover:text-white hover:bg-white/10 rounded"><Copy className="w-3.5 h-3.5" /></button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -330,7 +382,7 @@ export default function Dashboard() {
 
                 {selectedChat ? (
                     <>
-                        <div className="h-16 border-b border-neutral-800 flex items-center px-6 backdrop-blur-sm z-10 bg-neutral-900/80 justify-between">
+                        <div className="h-16 border-b border-neutral-800 flex items-center px-6 backdrop-blur-sm z-50 bg-neutral-900/80 justify-between relative">
                             <div className="flex items-center">
                                 <span className="relative flex h-3 w-3 mr-3"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span></span>
                                 <div>
@@ -338,37 +390,58 @@ export default function Dashboard() {
                                     <div className="text-[10px] text-neutral-400 font-mono tracking-wider mt-0.5">SESSION ID: {selectedChat.chatId.slice(0,8)}...</div>
                                 </div>
                             </div>
+
+                            {selectedChat.type === 'group' && (
+                                <div className="relative">
+                                    <button onClick={() => setShowChatMenu(!showChatMenu)} className="p-2 hover:bg-white/10 rounded-full text-neutral-400 hover:text-white transition-colors">
+                                        <MoreVertical className="w-5 h-5" />
+                                    </button>
+
+                                    {showChatMenu && (
+                                        <div className="absolute right-0 top-12 mt-2 bg-[#0a0a0a] border border-neutral-800 rounded-lg shadow-xl w-56 z-[100] flex flex-col overflow-hidden">
+                                            <button onClick={() => { setShowMembersListModal(true); setShowChatMenu(false); }} className="flex items-center gap-3 w-full text-left px-4 h-10 text-xs text-white hover:bg-white/10 transition-colors">
+                                                <Users className="w-4 h-4 text-neutral-400" /> View Members
+                                            </button>
+                                            <div className="h-px bg-neutral-800 w-full my-0"></div>
+                                            <button onClick={() => { setShowAddMemberModal(true); setShowChatMenu(false); }} className="flex items-center gap-3 w-full text-left px-4 h-10 text-xs text-white hover:bg-white/10 transition-colors">
+                                                <AddUserIcon className="w-4 h-4 text-emerald-500" /> Add Member
+                                            </button>
+                                            <div className="h-px bg-neutral-800 w-full my-0"></div>
+                                            <button onClick={handleLeaveGroup} className="flex items-center gap-3 w-full text-left px-4 h-10 text-xs text-red-500 hover:bg-red-500/10 transition-colors">
+                                                <LeaveIcon className="w-4 h-4" /> Leave Group
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-6 space-y-4 z-10 scrollbar-thin scrollbar-thumb-neutral-800">
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4 z-0 scrollbar-thin scrollbar-thumb-neutral-800">
                             {activeChatMessages.map((msg, index) => {
                                 const isMe = msg.senderId === user.uid;
-                                const repliedToMsg = msg.replyTo ? activeChatMessages.find(m => m.id === msg.replyTo) : null;
-                                const senderName = isMe
-                                    ? (userData?.username || "Me")
-                                    : (memberNames[msg.senderId] || "Loading...");
+                                const repliedToMsg = msg.replyTo
+                                    ? activeChatMessages.find(m => m.id === msg.replyTo)
+                                    : (msg.replyTo ? { deleted: true } : null);
+
+                                const senderName = isMe ? (userData?.username || "You") : (memberNames[msg.senderId] || "Loading...");
                                 const isSequence = index > 0 && activeChatMessages[index - 1].senderId === msg.senderId;
 
                                 return (
                                     <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'} animate-in slide-in-from-bottom-2 duration-300`}>
 
                                         {repliedToMsg && (
-                                            <div className={`mb-1 text-[10px] bg-neutral-800/50 px-3 py-1 rounded-full border border-neutral-800 text-neutral-400 max-w-[60%] truncate cursor-pointer hover:text-emerald-400 ${isMe ? 'mr-1' : 'ml-1'}`} onClick={() => document.getElementById(msg.replyTo)?.scrollIntoView({behavior: 'smooth'})}>
-                                                Reply: {repliedToMsg.content.substring(0, 30)}...
+                                            <div className={`mb-1 text-[10px] bg-neutral-800/50 px-3 py-1 rounded-full border border-neutral-800 text-neutral-400 max-w-[60%] truncate cursor-pointer hover:text-emerald-400 ${isMe ? 'mr-1' : 'ml-1'}`} onClick={() => !repliedToMsg.deleted && document.getElementById(msg.replyTo)?.scrollIntoView({behavior: 'smooth'})}>
+                                                {repliedToMsg.deleted ? <span className="italic text-neutral-600">Message deleted</span> : `Reply: ${repliedToMsg.content.substring(0, 30)}...`}
                                             </div>
                                         )}
 
                                         <div id={msg.id} className="group relative flex items-end gap-2 max-w-[75%]">
                                             {!isMe && <button onClick={() => setReplyingTo(msg)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"><Reply className="w-3 h-3 text-neutral-500" /></button>}
 
-                                            <div className={`rounded-2xl px-4 py-2 text-sm shadow-lg backdrop-blur-sm border relative group/msg ${
-                                                isMe
-                                                    ? 'bg-emerald-600/20 text-emerald-50 border-emerald-500/30 rounded-tr-sm'
-                                                    : 'bg-[#151515] text-neutral-200 border-neutral-800 rounded-tl-sm'
-                                            }`}>
+                                            <div className={`rounded-2xl px-4 py-2 text-sm shadow-lg backdrop-blur-sm border relative group/msg ${isMe ? 'bg-emerald-600/20 text-emerald-50 border-emerald-500/30 rounded-tr-sm' : 'bg-[#151515] text-neutral-200 border-neutral-800 rounded-tl-sm'}`}>
 
                                                 {!isSequence && (
-                                                    <div className="text-[10px] font-bold text-emerald-500 mb-1 cursor-pointer">
+                                                    <div className={`text-[10px] font-bold mb-1 cursor-pointer select-none hover:underline ${isMe ? 'text-emerald-300' : 'text-emerald-500'}`}>
                                                         {senderName}
                                                     </div>
                                                 )}
@@ -382,7 +455,6 @@ export default function Dashboard() {
                                                         </div>
                                                     </div>
                                                 ) : (
-
                                                     <div className="break-words leading-relaxed">
                                                         {msg.content}
                                                         {msg.isEdited && <span className="text-[8px] text-neutral-500 ml-1 select-none">(edited)</span>}
@@ -401,7 +473,6 @@ export default function Dashboard() {
                                                     </div>
                                                 )}
                                             </div>
-
                                             {isMe && <button onClick={() => setReplyingTo(msg)} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded"><Reply className="w-3 h-3 text-neutral-500" /></button>}
                                         </div>
                                     </div>
@@ -435,25 +506,86 @@ export default function Dashboard() {
                 <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
                     <div className="bg-[#0a0a0a] border border-neutral-800 p-6 rounded-xl w-96 shadow-2xl animate-in fade-in zoom-in-95">
                         <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><Users className="w-5 h-5 text-emerald-500"/> Create Group</h3>
-
                         <Input placeholder="Group Name (e.g. Project Alpha)" value={newGroupName} onChange={e => setNewGroupName(e.target.value)} className="mb-4" />
-
                         <div className="text-xs text-neutral-500 uppercase font-bold mb-2">Select Members:</div>
                         <div className="max-h-40 overflow-y-auto mb-4 space-y-1 border border-neutral-800 rounded p-2 scrollbar-thin scrollbar-thumb-neutral-800">
                             {myContacts.length === 0 && <div className="text-xs text-neutral-600 p-2">No contacts found.</div>}
                             {myContacts.map(contactId => (
                                 <label key={contactId} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded cursor-pointer transition-colors">
-                                    <input type="checkbox" checked={selectedGroupMembers.includes(contactId)} onChange={() => toggleGroupMember(contactId)} className="accent-emerald-500 w-4 h-4 rounded border-neutral-700 bg-neutral-900" />
-                                    <div className="flex-1 overflow-hidden">
-                                        <ContactItem contactId={contactId} isActive={false} onClick={() => {}} />
-                                    </div>
+                                    <input type="checkbox" checked={selectedGroupMembers.includes(contactId)} onChange={() => toggleGroupMember(contactId, setSelectedGroupMembers)} className="accent-emerald-500 w-4 h-4 rounded border-neutral-700 bg-neutral-900" />
+                                    <div className="flex-1 overflow-hidden"><ContactItem contactId={contactId} isActive={false} onClick={() => {}} /></div>
                                 </label>
                             ))}
                         </div>
-
                         <div className="flex gap-2 justify-end pt-2 border-t border-neutral-800">
                             <Button variant="ghost" onClick={() => setShowGroupModal(false)} className="text-neutral-400">Cancel</Button>
                             <Button onClick={handleCreateGroup}>Create</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showAddMemberModal && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#0a0a0a] border border-neutral-800 p-6 rounded-xl w-96 shadow-2xl animate-in fade-in zoom-in-95">
+                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2"><UserPlus className="w-5 h-5 text-emerald-500"/> Add Members</h3>
+                        <div className="text-xs text-neutral-500 uppercase font-bold mb-2">Select Contacts:</div>
+                        <div className="max-h-40 overflow-y-auto mb-4 space-y-1 border border-neutral-800 rounded p-2 scrollbar-thin scrollbar-thumb-neutral-800">
+                            {myContacts.filter(c => !selectedChat.members.includes(c)).length === 0 && <div className="text-xs text-neutral-600 p-2">No new contacts to add.</div>}
+                            {myContacts.filter(c => !selectedChat.members.includes(c)).map(contactId => (
+                                <label key={contactId} className="flex items-center gap-3 p-2 hover:bg-white/5 rounded cursor-pointer transition-colors">
+                                    <input type="checkbox" checked={selectedNewMembers.includes(contactId)} onChange={() => toggleGroupMember(contactId, setSelectedNewMembers)} className="accent-emerald-500 w-4 h-4 rounded border-neutral-700 bg-neutral-900" />
+                                    <div className="flex-1 overflow-hidden"><ContactItem contactId={contactId} isActive={false} onClick={() => {}} /></div>
+                                </label>
+                            ))}
+                        </div>
+                        <div className="flex gap-2 justify-end pt-2 border-t border-neutral-800">
+                            <Button variant="ghost" onClick={() => setShowAddMemberModal(false)} className="text-neutral-400">Cancel</Button>
+                            <Button onClick={handleAddMember}>Add</Button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showMembersListModal && selectedChat && (
+                <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-[#0a0a0a] border border-neutral-800 p-6 rounded-xl w-96 shadow-2xl animate-in fade-in zoom-in-95 flex flex-col max-h-[80vh]">
+                        <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            <Users className="w-5 h-5 text-emerald-500" /> Group Members
+                        </h3>
+                        <div className="flex-1 overflow-y-auto space-y-2 pr-2 scrollbar-thin scrollbar-thumb-neutral-800">
+                            {selectedChat.members.map(memberId => {
+                                const isMe = memberId === user.uid;
+                                const name = isMe ? (userData?.username || "You") : (memberNames[memberId] || "Loading...");
+
+                                return (
+                                    <div key={memberId} className="group flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-transparent hover:border-emerald-500/20 transition-all">
+                                        <div className="relative">
+                                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-neutral-700 to-neutral-900 flex items-center justify-center border border-neutral-700 text-neutral-300 font-bold select-none text-xs">
+                                                {name.slice(0, 2).toUpperCase()}
+                                            </div>
+                                            <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-[#151515]"></div>
+                                        </div>
+                                        <div className="flex-1 overflow-hidden">
+                                            <div className="text-sm font-bold text-white truncate flex items-center gap-2">
+                                                {name}
+                                                {isMe && <span className="text-[9px] bg-emerald-900/50 text-emerald-400 px-1.5 py-0.5 rounded border border-emerald-500/20">YOU</span>}
+                                            </div>
+                                            <div className="text-[10px] text-neutral-500 font-mono truncate">#{memberId.slice(0, 8)}...</div>
+                                        </div>
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(memberId)}
+                                            className="p-2 text-neutral-500 hover:text-white hover:bg-white/10 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                                            title="Copy ID"
+                                        >
+                                            <Copy className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="flex justify-end pt-4 mt-2 border-t border-neutral-800">
+                            <Button onClick={() => setShowMembersListModal(false)}>Close</Button>
                         </div>
                     </div>
                 </div>
