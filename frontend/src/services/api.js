@@ -3,20 +3,13 @@ import { auth } from '../lib/firebase';
 const getToken = async () => {
     await auth.authStateReady();
     const user = auth.currentUser;
-    if (!user) {
-        throw new Error('User not logged in');
-    }
+    if (!user) throw new Error('User not logged in');
     return await user.getIdToken();
 };
 
 export const authAPI = {
-    register: (email, password, username) => {
-        return window.api.register(email, password, username);
-    },
-
-    login: (email, password) => {
-        return window.api.login(email, password);
-    },
+    register: (email, password, username) => window.api.register(email, password, username),
+    login: (email, password) => window.api.login(email, password),
 };
 
 export const chatAPI = {
@@ -32,7 +25,19 @@ export const chatAPI = {
 
     createChat: async (currentUserId, targetUserId) => {
         const token = await getToken();
-        return window.api.createChat(currentUserId, targetUserId, token);
+        return window.api.createChat({
+            targetUserId,
+            type: 'direct'
+        }, token);
+    },
+
+    createGroup: async (groupName, memberIds) => {
+        const token = await getToken();
+        return window.api.createChat({
+            type: 'group',
+            groupName,
+            members: memberIds
+        }, token);
     },
 
     sendMessage: async (chatId, senderId, content, replyToMessageId = null) => {
@@ -48,6 +53,16 @@ export const chatAPI = {
     editMessage: async (chatId, messageId, senderId, newContent) => {
         const token = await getToken();
         return window.api.editMessage(chatId, messageId, senderId, newContent, token);
+    },
+
+    leaveChat: async (chatId) => {
+        const token = await getToken();
+        return window.api.leaveChat(chatId, token);
+    },
+
+    addMemberToGroup: async (chatId, newMemberId) => {
+        const token = await getToken();
+        return window.api.addMemberToGroup(chatId, newMemberId, token);
     }
 };
 
