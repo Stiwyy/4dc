@@ -5,6 +5,8 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Terminal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { signInWithCustomToken } from "firebase/auth";
+import { auth } from "../lib/firebase";
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true);
@@ -23,21 +25,28 @@ export default function AuthPage() {
         try {
             if (isLogin) {
                 const res = await authAPI.login(formData.email, formData.password);
+                const customToken = res.token;
+
+                await signInWithCustomToken(auth, customToken);
+
                 login({
-                    uid: res.data.userId,
-                    email: res.data.email,
-                    username: res.data.email
+                    uid: res.userId,
+                    email: res.email,
                 });
 
                 navigate('/dashboard');
-
             } else {
-                const res = await authAPI.register(formData.email, formData.password, formData.username);
+                await authAPI.register(formData.email, formData.password, formData.username);
+
+                const loginRes = await authAPI.login(formData.email, formData.password);
+                const customToken = loginRes.token;
+
+                await signInWithCustomToken(auth, customToken);
 
                 login({
-                    uid: res.data.uid,
+                    uid: loginRes.userId,
                     email: formData.email,
-                    username: res.data.username
+                    username: formData.username
                 });
 
                 navigate('/dashboard');

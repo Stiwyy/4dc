@@ -1,6 +1,58 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import started from 'electron-squirrel-startup';
+
+const BACKEND_URL = 'http://localhost:3000';
+
+async function makeRequest(endpoint, method, body) {
+    try {
+        const response = await fetch(`${BACKEND_URL}${endpoint}`, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || `HTTP Error ${response.status}`);
+        }
+
+        return data;
+    } catch (error) {
+        console.error(`Request failed [${endpoint}]:`, error);
+        throw error;
+    }
+}
+
+// Auth
+ipcMain.handle('auth:login', async (_, data) => {
+    return await makeRequest('/api/auth/login', 'POST', data);
+});
+
+ipcMain.handle('auth:register', async (_, data) => {
+    return await makeRequest('/api/auth/register', 'POST', data);
+});
+
+// Contacts
+ipcMain.handle('contacts:add', async (_, data) => {
+    return await makeRequest('/api/contacts/add', 'POST', data);
+});
+
+ipcMain.handle('contacts:accept', async (_, data) => {
+    return await makeRequest('/api/contacts/accept', 'POST', data);
+});
+
+// Chats
+ipcMain.handle('chat:create', async (_, data) => {
+    return await makeRequest('/api/chats/create', 'POST', data);
+});
+
+ipcMain.handle('chat:send', async (_, data) => {
+    return await makeRequest('/api/chats/send', 'POST', data);
+});
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
