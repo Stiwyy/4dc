@@ -1,17 +1,63 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { authAPI } from '../services/api';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Terminal } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { signInWithCustomToken } from "firebase/auth";
+import { auth } from "../lib/firebase";
 
 export default function AuthPage() {
     const [isLogin, setIsLogin] = useState(true);
+    const [formData, setFormData] = useState({ email: '', password: '', username: '' });
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+
+    const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleFakeLogin = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Visual Test: Logging in...");
-        navigate('/dashboard');
+        setError('');
+        setIsLoading(true);
+
+        try {
+            if (isLogin) {
+                const res = await authAPI.login(formData.email, formData.password);
+                const customToken = res.token;
+
+                await signInWithCustomToken(auth, customToken);
+
+                login({
+                    uid: res.userId,
+                    email: res.email,
+                });
+
+                navigate('/dashboard');
+            } else {
+                await authAPI.register(formData.email, formData.password, formData.username);
+
+                const loginRes = await authAPI.login(formData.email, formData.password);
+                const customToken = loginRes.token;
+
+                await signInWithCustomToken(auth, customToken);
+
+                login({
+                    uid: loginRes.userId,
+                    email: formData.email,
+                    username: formData.username
+                });
+
+                navigate('/dashboard');
+            }
+        } catch (err) {
+            console.error(err);
+            const msg = err.response?.data?.error || "Connection refused or invalid credentials.";
+            setError(msg);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -26,21 +72,51 @@ export default function AuthPage() {
                     </p>
                 </div>
 
-                <form className="space-y-6" onSubmit={handleFakeLogin}>
+                <form className="space-y-6" onSubmit={handleSubmit}>
                     {!isLogin && (
-                        <Input label="Codename" placeholder="Username" />
+                        <Input
+                            label="Codename"
+                            placeholder="Username"
+                            value={formData.username}
+                            onChange={e => setFormData({...formData, username: e.target.value})}
+                            required
+                        />
                     )}
-                    <Input label="Email" type="email" placeholder="user@encrypted.net" />
-                    <Input label="Key / Password" type="password" placeholder="••••••••" />
+                    <Input
+                        label="Email"
+                        type="email"
+                        placeholder="user@encrypted.net"
+                        value={formData.email}
+                        onChange={e => setFormData({...formData, email: e.target.value})}
+                        required
+                    />
+                    <Input
+                        label="Key / Password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={e => setFormData({...formData, password: e.target.value})}
+                        required
+                    />
 
-                    <Button type="submit" className="w-full">
-                        {isLogin ? 'Establish Connection' : 'Generate Identity'}
+                    {error && (
+                        <div className="text-xs text-red-500 font-mono border border-red-900/50 bg-red-900/10 p-2 rounded">
+                            Error: {error}
+                        </div>
+                    )}
+
+                    <Button type="submit" className="w-full" disabled={isLoading}>
+                        {isLoading ? 'Processing...' : (isLogin ? 'Establish Connection' : 'Generate Identity')}
                     </Button>
                 </form>
 
                 <div className="text-center">
                     <button
-                        onClick={() => setIsLogin(!isLogin)}
+                        type="button"
+                        onClick={() => {
+                            setIsLogin(!isLogin);
+                            setError('');
+                        }}
                         className="text-xs text-neutral-500 hover:text-emerald-500 transition-colors"
                     >
                         {isLogin ? 'Need an account? Register' : 'Already have keys? Login'}

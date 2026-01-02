@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { adminAuth } from "@/lib/firebaseAdmin";
 
 export async function POST(request) {
     try {
@@ -16,12 +17,14 @@ export async function POST(request) {
 
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
+        const firebaseToken = await adminAuth.createCustomToken(user.uid);
 
         return NextResponse.json(
             {
                 success: true,
                 userId: user.uid,
                 email: user.email,
+                token: firebaseToken,
             },
             { status: 200 }
         );
