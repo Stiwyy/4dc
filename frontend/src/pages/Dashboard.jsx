@@ -46,7 +46,7 @@ export default function Dashboard() {
                 <div className="flex-1 overflow-y-auto p-2 space-y-2">
                     <div className="p-3 rounded-lg bg-white/5 border border-emerald-500/20 cursor-pointer">
                         <div className="font-bold text-sm text-emerald-400">Alice</div>
-                        <div className="text-xs text-neutral-400 truncate">Hey, hast du die Keys?</div>
+                        <div className="text-xs text-neutral-400 truncate">dslfkldsj?</div>
                     </div>
                     <div className="p-3 rounded-lg hover:bg-white/5 cursor-pointer transition-colors">
                         <div className="font-bold text-sm text-white">Bob</div>
@@ -66,13 +66,13 @@ export default function Dashboard() {
                 <div className="flex-1 overflow-y-auto p-6 space-y-4 z-10">
                     <div className="flex justify-start">
                         <div className="bg-neutral-800 text-neutral-200 rounded-2xl rounded-tl-none px-4 py-2 max-w-md text-sm border border-neutral-700">
-                            Is the system safe?
+                            Test
                         </div>
                     </div>
 
                     <div className="flex justify-end">
                         <div className="bg-emerald-600/20 text-emerald-100 rounded-2xl rounded-tr-none px-4 py-2 max-w-md text-sm border border-emerald-500/30">
-                            Yes, 100% E2E encrypted.
+                            Test
                         </div>
                     </div>
                 </div>
