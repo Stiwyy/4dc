@@ -58,6 +58,16 @@ ipcMain.handle('chat:send', async (_, data) => {
     return await makeRequest('/api/chats/send', 'POST', bodyData, token);
 });
 
+ipcMain.handle('chat:delete', async (_, data) => {
+    const { token, ...body } = data;
+    return await makeRequest('/api/chats/delete', 'DELETE', body, token);
+});
+
+ipcMain.handle('chat:edit', async (_, data) => {
+    const { token, ...body } = data;
+    return await makeRequest('/api/chats/edit', 'PUT', body, token);
+});
+
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
   app.quit();

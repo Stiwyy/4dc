@@ -18,4 +18,10 @@ contextBridge.exposeInMainWorld('api', {
 
     sendMessage: (chatId, senderId, content, replyToMessageId, token) =>
         ipcRenderer.invoke('chat:send', { chatId, senderId, content, replyToMessageId, token }),
+
+    deleteMessage: (chatId, messageId, senderId, token) =>
+        ipcRenderer.invoke('chat:delete', { chatId, messageId, senderId, token }),
+
+    editMessage: (chatId, messageId, senderId, newContent, token) =>
+        ipcRenderer.invoke('chat:edit', { chatId, messageId, senderId, newContent, token }),
 });

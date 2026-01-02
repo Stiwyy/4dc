@@ -39,6 +39,16 @@ export const chatAPI = {
         const token = await getToken();
         return window.api.sendMessage(chatId, senderId, content, replyToMessageId, token);
     },
+
+    deleteMessage: async (chatId, messageId, senderId) => {
+        const token = await getToken();
+        return window.api.deleteMessage(chatId, messageId, senderId, token);
+    },
+
+    editMessage: async (chatId, messageId, senderId, newContent) => {
+        const token = await getToken();
+        return window.api.editMessage(chatId, messageId, senderId, newContent, token);
+    }
 };
 
 export default {};
