@@ -4,22 +4,24 @@ import started from 'electron-squirrel-startup';
 
 const BACKEND_URL = 'http://localhost:3000';
 
-async function makeRequest(endpoint, method, body) {
+async function makeRequest(endpoint, method, body, token = null) { // token Parameter hinzugefügt
+    const headers = {
+        'Content-Type': 'application/json',
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
     try {
         const response = await fetch(`${BACKEND_URL}${endpoint}`, {
             method: method,
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers: headers,
             body: JSON.stringify(body)
         });
 
         const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || `HTTP Error ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(data.error || `HTTP Error ${response.status}`);
         return data;
     } catch (error) {
         console.error(`Request failed [${endpoint}]:`, error);
@@ -38,7 +40,8 @@ ipcMain.handle('auth:register', async (_, data) => {
 
 // Contacts
 ipcMain.handle('contacts:add', async (_, data) => {
-    return await makeRequest('/api/contacts/add', 'POST', data);
+    const { token, ...bodyData } = data;
+    return await makeRequest('/api/contacts/add', 'POST', bodyData, token);
 });
 
 ipcMain.handle('contacts:accept', async (_, data) => {
@@ -51,7 +54,8 @@ ipcMain.handle('chat:create', async (_, data) => {
 });
 
 ipcMain.handle('chat:send', async (_, data) => {
-    return await makeRequest('/api/chats/send', 'POST', data);
+    const { token, ...bodyData } = data;
+    return await makeRequest('/api/chats/send', 'POST', bodyData, token);
 });
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.

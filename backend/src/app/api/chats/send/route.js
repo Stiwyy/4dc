@@ -1,13 +1,32 @@
 import { adminDb } from "@/lib/firebaseAdmin";
 import { NextResponse } from "next/server";
-import { FieldValue } from "firebase-admin/firestore";
+import { verifyAuth } from "@/lib/auth-middleware";
 
 export async function POST(request) {
     try {
-        const { chatId, senderId, content, replyToMessageId } = await request.json();
+        let senderId;
+        try {
+            senderId = await verifyAuth(request);
+        } catch (e) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
 
-        if (!chatId || !senderId || !content) {
+        const { chatId, content, replyToMessageId } = await request.json();
+
+        if (!chatId || !content) {
             return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+        }
+
+        const chatRef = adminDb.collection("chats").doc(chatId);
+        const chatDoc = await chatRef.get();
+
+        if (!chatDoc.exists) {
+            return NextResponse.json({ error: "Chat not found" }, { status: 404 });
+        }
+
+        const chatData = chatDoc.data();
+        if (!chatData.members.includes(senderId)) {
+            return NextResponse.json({ error: "You are not a member of this chat" }, { status: 403 });
         }
 
         const messageData = {
@@ -18,13 +37,9 @@ export async function POST(request) {
             replyTo: replyToMessageId || null
         };
 
-        const messageRef = await adminDb
-            .collection("chats")
-            .doc(chatId)
-            .collection("messages")
-            .add(messageData);
+        const messageRef = await chatRef.collection("messages").add(messageData);
 
-        await adminDb.collection("chats").doc(chatId).update({
+        await chatRef.update({
             lastMessageAt: new Date().toISOString()
         });
 

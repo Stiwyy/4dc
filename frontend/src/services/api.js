@@ -1,23 +1,44 @@
-export const authAPI = {
-    register: (email, password, username) =>
-        window.api.register(email, password, username),
+import { auth } from '../lib/firebase';
 
-    login: (email, password) =>
-        window.api.login(email, password),
+const getToken = async () => {
+    await auth.authStateReady();
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error('User not logged in');
+    }
+    return await user.getIdToken();
+};
+
+export const authAPI = {
+    register: (email, password, username) => {
+        return window.api.register(email, password, username);
+    },
+
+    login: (email, password) => {
+        return window.api.login(email, password);
+    },
 };
 
 export const chatAPI = {
-    addContact: (currentUserId, targetUserId) =>
-        window.api.addContact(currentUserId, targetUserId),
+    addContact: async (currentUserId, targetUserId) => {
+        const token = await getToken();
+        return window.api.addContact(currentUserId, targetUserId, token);
+    },
 
-    acceptContact: (currentUserId, requesterId) =>
-        window.api.acceptContact(currentUserId, requesterId),
+    acceptContact: async (currentUserId, requesterId) => {
+        const token = await getToken();
+        return window.api.acceptContact(currentUserId, requesterId, token);
+    },
 
-    createChat: (currentUserId, targetUserId) =>
-        window.api.createChat(currentUserId, targetUserId),
+    createChat: async (currentUserId, targetUserId) => {
+        const token = await getToken();
+        return window.api.createChat(currentUserId, targetUserId, token);
+    },
 
-    sendMessage: (chatId, senderId, content, replyToMessageId = null) =>
-        window.api.sendMessage(chatId, senderId, content, replyToMessageId),
+    sendMessage: async (chatId, senderId, content, replyToMessageId = null) => {
+        const token = await getToken();
+        return window.api.sendMessage(chatId, senderId, content, replyToMessageId, token);
+    },
 };
 
 export default {};
