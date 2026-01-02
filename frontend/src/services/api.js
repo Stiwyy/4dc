@@ -35,6 +35,15 @@ export const chatAPI = {
         return window.api.createChat(currentUserId, targetUserId, token);
     },
 
+    createGroup: async (groupName, memberIds) => {
+        const token = await getToken();
+        return window.api.createChat({
+            type: 'group',
+            groupName,
+            members: memberIds
+        }, token);
+    },
+
     sendMessage: async (chatId, senderId, content, replyToMessageId = null) => {
         const token = await getToken();
         return window.api.sendMessage(chatId, senderId, content, replyToMessageId, token);

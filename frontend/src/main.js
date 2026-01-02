@@ -50,9 +50,9 @@ ipcMain.handle('contacts:accept', async (_, data) => {
 
 // Chats
 ipcMain.handle('chat:create', async (_, data) => {
-    return await makeRequest('/api/chats/create', 'POST', data);
+    const { token, ...body } = data;
+    return await makeRequest('/api/chats/create', 'POST', body, token);
 });
-
 ipcMain.handle('chat:send', async (_, data) => {
     const { token, ...bodyData } = data;
     return await makeRequest('/api/chats/send', 'POST', bodyData, token);

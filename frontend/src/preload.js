@@ -13,8 +13,8 @@ contextBridge.exposeInMainWorld('api', {
     acceptContact: (currentUserId, requesterId, token) =>
         ipcRenderer.invoke('contacts:accept', { currentUserId, requesterId, token }),
 
-    createChat: (currentUserId, targetUserId, token) =>
-        ipcRenderer.invoke('chat:create', { currentUserId, targetUserId, token }),
+    createChat: (data, token) =>
+        ipcRenderer.invoke('chat:create', { ...data, token }),
 
     sendMessage: (chatId, senderId, content, replyToMessageId, token) =>
         ipcRenderer.invoke('chat:send', { chatId, senderId, content, replyToMessageId, token }),
