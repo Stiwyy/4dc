@@ -12,8 +12,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "4dc",
-  description: "4 Dealers Chat.",
+    title: "4dc",
+    description: "4 Dealers Chat.",
+    icons: {
+        icon: '/icon.png',
+    },
 };
 
 export default function RootLayout({ children }) {
