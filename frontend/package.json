@@ -1,8 +1,8 @@
 {
-  "name": "frontend",
-  "productName": "frontend",
+  "name": "4dc",
+  "productName": "4dc",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Unsecure messenger for Dealers",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -16,7 +16,7 @@
     "name": "Stiwyy",
     "email": "andrinrenggli@outlook.com"
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "devDependencies": {
     "@electron-forge/cli": "^7.10.2",
     "@electron-forge/maker-deb": "^7.10.2",
