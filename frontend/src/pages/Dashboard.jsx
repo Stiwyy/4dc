@@ -260,12 +260,23 @@ export default function Dashboard() {
         const currentReplyId = replyingTo?.id || null;
         setMessageInput("");
         setReplyingTo(null);
+        const tempMessage = {
+            id: "temp-" + Date.now(),
+            content: plainText,
+            senderId: user.uid,
+            sentAt: new Date(),
+            isTemp: true
+        };
+        setActiveChatMessages(prev => [...prev, tempMessage]);
+        setTimeout(scrollToBottom, 10);
         try {
             const encrypted = cryptoService.encrypt(plainText, selectedChat.chatId);
             await chatAPI.sendMessage(selectedChat.chatId, user.uid, encrypted, currentReplyId);
         } catch (err) {
             console.error(err);
             setMessageInput(plainText);
+            alert("Senden fehlgeschlagen!");
+            setActiveChatMessages(prev => prev.filter(m => m.id !== tempMessage.id));
         }
     };
 
