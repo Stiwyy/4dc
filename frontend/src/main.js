@@ -3,7 +3,7 @@ import path from 'node:path';
 import started from 'electron-squirrel-startup';
 
 const isDev = !app.isPackaged;
-const BACKEND_URL = isDev ? 'http://localhost:3000' : 'https://your-vercel-app.vercel.app';
+const BACKEND_URL = 'https://4dc.vercel.app';
 
 async function makeRequest(endpoint, method, body, token = null) {
     const headers = { 'Content-Type': 'application/json' };

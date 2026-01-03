@@ -4,14 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e7dab02c-9afb-4a5b-9db2-3f815a4e5a4b" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/build/4dc.desktop" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../backend/src/app/layout.js" beforeDir="false" afterPath="$PROJECT_DIR$/../backend/src/app/layout.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/forge.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/forge.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-    </list>
+    <list default="true" id="e7dab02c-9afb-4a5b-9db2-3f815a4e5a4b" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -96,7 +89,7 @@
       <updated>1766272738112</updated>
       <workItem from="1766272739247" duration="1285000" />
       <workItem from="1767366074660" duration="28322000" />
-      <workItem from="1767468309506" duration="9500000" />
+      <workItem from="1767468309506" duration="9653000" />
     </task>
     <servers />
   </component>
