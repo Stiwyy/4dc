@@ -34,21 +34,120 @@
 ## Tech Stack
 
 ### Client (Desktop App)
-
-* **Framework:** [React](https://reactjs.org/)
-* **Wrapper:** [Electron](https://www.electronjs.org/) (Local Desktop Client)
-* **State & Logic:** Custom Hooks / Context API
+* **Core:** [Electron](https://www.electronjs.org/) (v39)
+* **Build Tool:** [Vite](https://vitejs.dev/) (via Electron Forge)
+* **Frontend:** [React](https://react.dev/) (v19)
+* **Styling:** Tailwind CSS (v3) + `clsx` / `tailwind-merge`
+* **Icons:** Lucide React
+* **Crypto:** `crypto-js` (AES Encryption)
+* **Routing:** React Router DOM
 
 ### Backend & Web
-
-* **Framework:** [Next.js 16](https://nextjs.org/) (API Routes)
-* **Hosting:** [Vercel](https://vercel.com/) (Serves the API and the Download Website)
+* **Framework:** [Next.js 16](https://nextjs.org/) (App Router)
+* **Styling:** Tailwind CSS (v4)
+* **Animations:** Framer Motion
+* **Server Logic:** Firebase Admin SDK
 
 ### Database & Services
-
 * **Database:** Google Firestore (NoSQL)
 * **Auth:** Firebase Authentication
-* **Server-Side Logic:** Firebase Admin SDK
+
+---
+
+## Getting Started / Local Development
+
+Follow these steps to set up the project locally.
+
+### Prerequisites
+* **Node.js** (v20 or higher recommended)
+* **npm** or **yarn**
+* A **Firebase Project** (Google Account required)
+
+### 1. Firebase Setup
+1. Go to the [Firebase Console](https://console.firebase.google.com/).
+2. Create a new project.
+3. **Authentication:** Enable "Email/Password".
+4. **Firestore Database:** Create a database in "Test Mode".
+5. **Settings:**
+   - Get your **Web App Config** (API Key, etc.) for the Client.
+   - Generate a **Service Account Private Key** (JSON) for the Backend.
+
+### 2. Clone the Repository
+```bash
+git clone https://github.com/Stiwyy/4dc.git
+cd 4dc
+
+```
+
+### 3. Backend Setup (Next.js)
+
+The backend handles the API and the landing page.
+
+1. Navigate to the backend folder:
+```bash
+cd backend
+npm install
+
+```
+
+
+2. Create a `.env.local` file:
+```env
+FIREBASE_PROJECT_ID=your-project-id
+FIREBASE_CLIENT_EMAIL=your-service-account-email
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n..."
+
+```
+
+
+3. Start the server:
+```bash
+npm run dev
+
+```
+
+
+*Runs on http://localhost:3000*
+
+### 4. Client Setup (Electron)
+
+The desktop application.
+
+1. Open a new terminal and navigate to the frontend folder:
+```bash
+cd frontend
+npm install
+
+```
+
+
+2. Create a `.env` file (Vite requires `VITE_` prefix for exposed vars, but check your implementation if you use standard `REACT_APP_` or `VITE_`):
+```env
+VITE_FIREBASE_API_KEY=your-api-key
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+# Add other firebase config vars here
+
+```
+
+
+3. Start the Electron app:
+```bash
+npm start
+
+```
+
+
+*(This runs `electron-forge start`)*
+
+### Building the Client
+
+To create a distributable executable (exe, deb, etc.):
+
+```bash
+npm run make
+
+```
 
 ---
 
